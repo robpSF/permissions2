@@ -6,6 +6,10 @@ def add_logo_and_text(background, logo, org_name):
     # Resize background to 1290x192
     bg_resized = background.resize((1290, 192))
 
+    # Ensure the logo has an alpha channel
+    if logo.mode != "RGBA":
+        logo = logo.convert("RGBA")
+
     # Calculate logo size and position
     logo_width, logo_height = logo.size
     max_logo_height = 192 - 24  # Considering 12 pixels padding from top and bottom
