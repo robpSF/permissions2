@@ -4,7 +4,7 @@ from collections import Counter
 
 def load_data(uploaded_file):
     df = pd.read_excel(uploaded_file)
-    df['Permissions'] = df['Permissions'].apply(lambda x: x.split(', '))
+    df['Permissions'] = df['Permissions'].apply(lambda x: x.split(', ') if isinstance(x, str) else [])
     return df
 
 def main():
