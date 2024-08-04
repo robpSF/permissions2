@@ -15,6 +15,10 @@ def main():
     
     if uploaded_file:
         df = load_data(uploaded_file)
+        
+        if not all(col in df.columns for col in ['Name', 'Tags', 'Faction']):
+            st.error("The uploaded file must contain 'Name', 'Tags', and 'Faction' columns.")
+            return
 
         # Calculate statistics
         permission_counts = Counter(permission for permissions in df['Permissions'] for permission in permissions)
@@ -28,7 +32,7 @@ def main():
         permission_list = list(permission_counts.keys())
         selected_permission = st.selectbox('Select a Permission', permission_list)
         filtered_df = df[df['Permissions'].apply(lambda x: selected_permission in x)]
-        st.write(filtered_df[['Name', 'Tag', 'Faction']])
+        st.write(filtered_df[['Name', 'Tags', 'Faction']])
 
         # Edit section
         st.header('Edit Permissions')
