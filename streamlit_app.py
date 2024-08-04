@@ -22,6 +22,10 @@ def add_logo_and_text(background, logo, org_name, font_size):
     bottom_crop = top_crop + target_height
     bg_cropped = bg_resized.crop((0, top_crop, target_width, bottom_crop))
 
+    # Ensure the background image has an alpha channel
+    if bg_cropped.mode != "RGBA":
+        bg_cropped = bg_cropped.convert("RGBA")
+
     # Ensure the logo has an alpha channel
     if logo.mode != "RGBA":
         logo = logo.convert("RGBA")
