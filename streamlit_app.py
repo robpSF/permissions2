@@ -5,6 +5,7 @@ from collections import Counter
 def load_data(uploaded_file):
     df = pd.read_excel(uploaded_file)
     df['Permissions'] = df['Permissions'].apply(lambda x: [permission.strip() for permission in x.split(',')] if isinstance(x, str) else [])
+    df['Tags'] = df['Tags'].apply(lambda x: [tag.strip() for tag in x.split(',')] if isinstance(x, str) else [])
     return df
 
 def display_statistics(df):
@@ -14,23 +15,35 @@ def display_statistics(df):
     return permission_counts
 
 def display_filter_section(df, permission_counts):
-    st.header('Filter Personas by Permission')
+    st.header('Filter Personas by Permission, Faction, and Tags')
+    
     permission_list = list(permission_counts.keys())
     selected_permission = st.selectbox('Select a Permission', permission_list, key='selected_permission')
-    filtered_df = df[df['Permissions'].apply(lambda x: st.session_state.selected_permission in x)]
 
-    # Number of personas with this Permission
+    faction_list = df['Faction'].unique().tolist()
+    selected_faction = st.selectbox('Select a Faction', faction_list, key='selected_faction')
+
+    tag_list = sorted(set(tag for tags in df['Tags'] for tag in tags))
+    selected_tags = st.multiselect('Select Tags', tag_list, key='selected_tags')
+
+    filtered_df = df[
+        df['Permissions'].apply(lambda x: selected_permission in x) &
+        df['Faction'].apply(lambda x: x == selected_faction) &
+        df['Tags'].apply(lambda x: any(tag in x for tag in selected_tags))
+    ]
+
+    # Number of personas with this Permission, Faction, and Tags
     num_personas = len(filtered_df)
-    st.write(f"Number of personas with the permission '{st.session_state.selected_permission}': {num_personas}")
+    st.write(f"Number of personas with the permission '{selected_permission}', faction '{selected_faction}', and tags '{', '.join(selected_tags)}': {num_personas}")
 
     # Permissions also controlling these personas
-    other_permissions = Counter(permission for permissions in filtered_df['Permissions'] for permission in permissions if permission != st.session_state.selected_permission)
+    other_permissions = Counter(permission for permissions in filtered_df['Permissions'] for permission in permissions if permission != selected_permission)
     st.write(f"Permissions also controlling these personas: {', '.join(other_permissions.keys())}")
 
     # Display the table of filtered personas
     st.write(filtered_df[['Name', 'Tags', 'Faction']])
     
-    return df, st.session_state.selected_permission, permission_list
+    return df, selected_permission, permission_list
 
 def edit_permissions(df, permission_list):
     st.header('Edit Permissions')
