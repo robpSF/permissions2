@@ -29,7 +29,7 @@ def add_logo_and_text(background, logo, org_name, font_size):
     # Add organization name text
     draw = ImageDraw.Draw(bg_resized)
     try:
-        font = ImageFont.truetype("arial.ttf", font_size)
+        font = ImageFont.truetype("DejaVuSans-Bold.ttf", font_size)
     except IOError:
         font = ImageFont.load_default()
 
