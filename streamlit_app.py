@@ -23,7 +23,7 @@ def display_filter_section(df, permission_counts):
     faction_list = df['Faction'].unique().tolist()
     selected_faction = st.selectbox('Select a Faction', faction_list, key='selected_faction')
 
-    tag_list = sorted(set(tag for tags in df['Tags'] for tag in tags))
+    tag_list = sorted(set(tag for tags in df['Tags'] for tag in tags if isinstance(tags, list)))
     selected_tags = st.multiselect('Select Tags', tag_list, key='selected_tags')
 
     filtered_df = df[
