@@ -44,7 +44,7 @@ st.title("Image Generator")
 uploaded_background = st.file_uploader("Upload Background Image", type=["png", "jpg", "jpeg"])
 uploaded_logo = st.file_uploader("Upload Logo Image", type=["png", "jpg", "jpeg"])
 org_name = st.text_input("Enter Organization Name")
-font_size = st.slider("Select Font Size", min_value=80, max_value=200, value=80)
+font_size = st.slider("Select Font Size", min_value=24, max_value=200, value=24)
 
 if uploaded_background and uploaded_logo and org_name:
     background = Image.open(uploaded_background)
@@ -60,4 +60,4 @@ if uploaded_background and uploaded_logo and org_name:
     result_image.save(buf, format="PNG")
     byte_im = buf.getvalue()
 
-    st.download_button(label="Download Image", data=byte_im, file_name="output.png", mime="image/png")
+    st.download_button(label="Download Image", data=byte_im, file_name=f"{org_name}.png", mime="image/png")
