@@ -32,6 +32,16 @@ def main():
         permission_list = list(permission_counts.keys())
         selected_permission = st.selectbox('Select a Permission', permission_list)
         filtered_df = df[df['Permissions'].apply(lambda x: selected_permission in x)]
+
+        # Number of personas with this Permission
+        num_personas = len(filtered_df)
+        st.write(f"Number of personas with the permission '{selected_permission}': {num_personas}")
+
+        # Permissions also controlling these personas
+        other_permissions = Counter(permission for permissions in filtered_df['Permissions'] for permission in permissions if permission != selected_permission)
+        st.write(f"Permissions also controlling these personas: {', '.join(other_permissions.keys())}")
+
+        # Display the table of filtered personas
         st.write(filtered_df[['Name', 'Tags', 'Faction']])
 
         # Edit section
