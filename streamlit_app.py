@@ -44,7 +44,7 @@ st.title("Image Generator")
 uploaded_background = st.file_uploader("Upload Background Image", type=["png", "jpg", "jpeg"])
 uploaded_logo = st.file_uploader("Upload Logo Image", type=["png", "jpg", "jpeg"])
 org_name = st.text_input("Enter Organization Name")
-font_size = st.slider("Select Font Size", min_value=24, max_value=200, value=24)
+font_size = st.slider("Select Font Size", min_value=24, max_value=200, value=50)
 
 if uploaded_background and uploaded_logo and org_name:
     background = Image.open(uploaded_background)
