@@ -2,7 +2,7 @@ import streamlit as st
 from PIL import Image, ImageDraw, ImageFont
 import io
 
-def add_logo_and_text(background, logo, org_name):
+def add_logo_and_text(background, logo, org_name, font_size):
     # Resize background to 1290x192
     bg_resized = background.resize((1290, 192))
 
@@ -28,7 +28,6 @@ def add_logo_and_text(background, logo, org_name):
 
     # Add organization name text
     draw = ImageDraw.Draw(bg_resized)
-    font_size = 40
     try:
         font = ImageFont.truetype("arial.ttf", font_size)
     except IOError:
@@ -45,12 +44,13 @@ st.title("Image Generator")
 uploaded_background = st.file_uploader("Upload Background Image", type=["png", "jpg", "jpeg"])
 uploaded_logo = st.file_uploader("Upload Logo Image", type=["png", "jpg", "jpeg"])
 org_name = st.text_input("Enter Organization Name")
+font_size = st.slider("Select Font Size", min_value=80, max_value=200, value=80)
 
 if uploaded_background and uploaded_logo and org_name:
     background = Image.open(uploaded_background)
     logo = Image.open(uploaded_logo)
 
-    result_image = add_logo_and_text(background, logo, org_name)
+    result_image = add_logo_and_text(background, logo, org_name, font_size)
 
     # Display the result image
     st.image(result_image, caption="Generated Image")
