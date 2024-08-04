@@ -1,6 +1,8 @@
 import streamlit as st
 from PIL import Image, ImageDraw, ImageFont
 import io
+import zipfile
+import pandas as pd
 
 def add_logo_and_text(background, logo, org_name, font_size):
     # Calculate the aspect ratio
@@ -51,25 +53,62 @@ def add_logo_and_text(background, logo, org_name, font_size):
 
     return bg_cropped
 
+def process_batch(excel_file, font_size):
+    df = pd.read_excel(excel_file)
+    images = []
+    for index, row in df.iterrows():
+        background = Image.open(io.BytesIO(row['TwBgImg']))
+        logo = Image.open(io.BytesIO(row['TwProfileImg']))
+        org_name = row['Name']
+        result_image = add_logo_and_text(background, logo, org_name, font_size)
+        images.append((org_name, result_image))
+    return images
+
 st.title("Image Generator")
 
-uploaded_background = st.file_uploader("Upload Background Image", type=["png", "jpg", "jpeg"])
-uploaded_logo = st.file_uploader("Upload Logo Image", type=["png", "jpg", "jpeg"])
-org_name = st.text_input("Enter Organization Name")
-font_size = st.slider("Select Font Size", min_value=24, max_value=200, value=50)
+mode = st.radio("Select Mode", ["Solo Mode", "Batch Mode"])
 
-if uploaded_background and uploaded_logo and org_name:
-    background = Image.open(uploaded_background)
-    logo = Image.open(uploaded_logo)
+if mode == "Solo Mode":
+    uploaded_background = st.file_uploader("Upload Background Image", type=["png", "jpg", "jpeg"])
+    uploaded_logo = st.file_uploader("Upload Logo Image", type=["png", "jpg", "jpeg"])
+    org_name = st.text_input("Enter Organization Name")
+    font_size = st.slider("Select Font Size", min_value=24, max_value=200, value=50)
 
-    result_image = add_logo_and_text(background, logo, org_name, font_size)
+    if uploaded_background and uploaded_logo and org_name:
+        background = Image.open(uploaded_background)
+        logo = Image.open(uploaded_logo)
 
-    # Display the result image
-    st.image(result_image, caption="Generated Image")
+        result_image = add_logo_and_text(background, logo, org_name, font_size)
 
-    # Prepare the image for download
-    buf = io.BytesIO()
-    result_image.save(buf, format="PNG")
-    byte_im = buf.getvalue()
+        # Display the result image
+        st.image(result_image, caption="Generated Image")
 
-    st.download_button(label="Download Image", data=byte_im, file_name=f"{org_name}.png", mime="image/png")
+        # Prepare the image for download
+        buf = io.BytesIO()
+        result_image.save(buf, format="PNG")
+        byte_im = buf.getvalue()
+
+        st.download_button(label="Download Image", data=byte_im, file_name=f"{org_name}.png", mime="image/png")
+
+elif mode == "Batch Mode":
+    uploaded_excel = st.file_uploader("Upload Excel File", type=["xlsx"])
+    font_size = st.slider("Select Font Size", min_value=24, max_value=200, value=50)
+
+    if uploaded_excel:
+        images = process_batch(uploaded_excel, font_size)
+
+        zip_buffer = io.BytesIO()
+        with zipfile.ZipFile(zip_buffer, "w") as zip_file:
+            for org_name, image in images:
+                buf = io.BytesIO()
+                image.save(buf, format="PNG")
+                zip_file.writestr(f"{org_name}.png", buf.getvalue())
+
+        st.download_button(label="Download All Images as ZIP", data=zip_buffer.getvalue(), file_name="images.zip", mime="application/zip")
+
+        for org_name, image in images:
+            st.image(image, caption=f"Generated Image for {org_name}")
+            buf = io.BytesIO()
+            image.save(buf, format="PNG")
+            byte_im = buf.getvalue()
+            st.download_button(label=f"Download {org_name}.png", data=byte_im, file_name=f"{org_name}.png", mime="image/png")
