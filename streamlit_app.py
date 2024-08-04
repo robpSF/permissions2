@@ -3,6 +3,8 @@ from PIL import Image, ImageDraw, ImageFont
 import io
 import zipfile
 import pandas as pd
+import requests
+from io import BytesIO
 
 def add_logo_and_text(background, logo, org_name, font_size):
     # Calculate the aspect ratio
@@ -53,12 +55,16 @@ def add_logo_and_text(background, logo, org_name, font_size):
 
     return bg_cropped
 
+def fetch_image_from_url(url):
+    response = requests.get(url)
+    return Image.open(BytesIO(response.content))
+
 def process_batch(excel_file, font_size):
     df = pd.read_excel(excel_file)
     images = []
     for index, row in df.iterrows():
-        background = Image.open(io.BytesIO(row['TwBgImg']))
-        logo = Image.open(io.BytesIO(row['TwProfileImg']))
+        background = fetch_image_from_url(row['TwBgImg'])
+        logo = fetch_image_from_url(row['TwProfileImg'])
         org_name = row['Name']
         result_image = add_logo_and_text(background, logo, org_name, font_size)
         images.append((org_name, result_image))
