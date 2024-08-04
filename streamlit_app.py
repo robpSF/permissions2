@@ -3,8 +3,20 @@ from PIL import Image, ImageDraw, ImageFont
 import io
 
 def add_logo_and_text(background, logo, org_name, font_size):
-    # Resize background to 1290x192
-    bg_resized = background.resize((1290, 192))
+    # Calculate the aspect ratio
+    bg_width, bg_height = background.size
+    target_width = 1290
+    target_height = 192
+    aspect_ratio = bg_width / bg_height
+
+    # Scale to fit the width
+    new_height = int(target_width / aspect_ratio)
+    bg_resized = background.resize((target_width, new_height))
+
+    # Crop equally from top and bottom
+    top_crop = (new_height - target_height) // 2
+    bottom_crop = top_crop + target_height
+    bg_cropped = bg_resized.crop((0, top_crop, target_width, bottom_crop))
 
     # Ensure the logo has an alpha channel
     if logo.mode != "RGBA":
@@ -12,7 +24,7 @@ def add_logo_and_text(background, logo, org_name, font_size):
 
     # Calculate logo size and position
     logo_width, logo_height = logo.size
-    max_logo_height = 192 - 24  # Considering 12 pixels padding from top and bottom
+    max_logo_height = target_height - 24  # Considering 12 pixels padding from top and bottom
     if logo_height > max_logo_height:
         logo_ratio = max_logo_height / logo_height
         logo_width = int(logo_width * logo_ratio)
@@ -24,20 +36,20 @@ def add_logo_and_text(background, logo, org_name, font_size):
     logo_y = 12
 
     # Paste logo on the background
-    bg_resized.paste(logo_resized, (logo_x, logo_y), logo_resized)
+    bg_cropped.paste(logo_resized, (logo_x, logo_y), logo_resized)
 
     # Add organization name text
-    draw = ImageDraw.Draw(bg_resized)
+    draw = ImageDraw.Draw(bg_cropped)
     try:
         font = ImageFont.truetype("DejaVuSans-Bold.ttf", font_size)
     except IOError:
         font = ImageFont.load_default()
 
     text_x = logo_x + logo_width + 30
-    text_y = (192 - font_size) // 2
+    text_y = (target_height - font_size) // 2
     draw.text((text_x, text_y), org_name, font=font, fill="white")
 
-    return bg_resized
+    return bg_cropped
 
 st.title("Image Generator")
 
